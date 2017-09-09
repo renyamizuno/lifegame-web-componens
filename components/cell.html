@@ -1,0 +1,48 @@
+<template id="lifegame-cell">
+  <style>
+    :host {
+      background-color: black;
+      box-sizing: border-box;
+      color: black;
+      display: inline-block;
+      min-height: 5px;
+      min-width: 5px;
+      transition: .1s ease-out;
+    }
+    :host([alive]) {
+      background-color: greenyellow;
+      color: greenyellow;
+    }
+  </style>
+
+  <div class="cell"></div>
+</template>
+
+<script>
+  !function(){
+    const cellDoc = document.currentScript.ownerDocument;
+
+    customElements.define('lifegame-cell',
+      class extends HTMLElement {
+        get alive() {
+          return this.getAttribute('alive') ? true : false;
+        }
+
+        set alive(val) {
+          if (val) {
+            this.setAttribute('alive', val);
+          } else {
+            this.removeAttribute('alive');
+          }
+        }
+
+        constructor() {
+          super();
+          const shadowRoot = this.attachShadow({ mode: 'open' });
+          const template = cellDoc.getElementById('lifegame-cell').content;
+          shadowRoot.appendChild(template.cloneNode(true));
+        }
+      }
+    );
+  }();
+</script>
