@@ -1,0 +1,130 @@
+<link rel="import" href="./cell.html">
+<template id="lifegame-main">
+    <style>
+      :host {
+        box-sizing: border-box;
+        display: inline-block;
+      }
+      div {
+        display: flex;
+      }
+      .lifegame-board {
+        display: inline-block;
+      }
+    </style>
+    <div class="lifegame-board"></div>
+  </template>
+
+  <script>
+    !function(){
+      const lifegameDoc = document.currentScript.ownerDocument;
+
+      customElements.define('lifegame-main',
+        class extends HTMLElement {
+          static get observedAttributes() {return ['run-status', 'width', 'height']; }
+
+          get width() {
+            return Number.parseInt(this.getAttribute('width')) || 5;
+          }
+          set width(val) {
+            if (val) {
+              this.setAttribute('width', val);
+            } else {
+              this.removeAttribute('width');
+            }
+          }
+
+          get height() {
+            return Number.parseInt(this.getAttribute('height')) || 5;
+          }
+          set height(val) {
+            if (val) {
+              this.setAttribute('height', val);
+            } else {
+              this.removeAttribute('height');
+            }
+          }
+
+          get runStatus() {
+            return this.getAttribute('run-status');
+          }
+
+          set runStatus(val) {
+            if (val) {
+              this.setAttribute('run-status', val);
+            } else {
+              this.removeAttribute('run-status');
+            }
+          }
+
+          constructor() {
+            super();
+            const shadowRoot = this.attachShadow({ mode: 'open' });
+            const template = lifegameDoc.getElementById('lifegame-main').content;
+            shadowRoot.appendChild(template.cloneNode(true));
+            this.initialize();
+            this.run();
+          }
+
+          attributeChangedCallback(attrName, oldVal, newVal) {
+            if(attrName === 'run-status') {
+              this.run();
+            } else {
+              this.initialize();
+            }
+          }
+
+          initialize() {
+            const root = this.shadowRoot.querySelector('.lifegame-board');
+            root.innerHTML = '';
+            const Cell = customElements.get('lifegame-cell');
+            this.cells = [];
+            for(let y = 0; y < this.height; y++) {
+              this.cells[y] = [];
+              const div = lifegameDoc.createElement('div');
+              for(let x = 0; x < this.width; x++) {
+                const cell = new Cell();
+                cell.alive = Math.random() * 10 < 1;
+                this.cells[y][x] = cell;
+                div.appendChild(cell);
+              }
+              root.appendChild(div);
+            }
+          }
+
+          run() {
+            if(!this.runStatus) { return; }
+            const nextCells = this.cells.map((yCells) => (yCells.map((cell) => (cell.alive))));
+            this.cells.forEach((yCells, yIndex) => {
+              yCells.forEach((cell, xIndex) => {
+                const prevY = (yIndex - 1) < 0 ? this.height - 1 : yIndex - 1;
+                const prevX = (xIndex - 1) < 0 ? this.width - 1 : xIndex - 1;
+                const nextY = (yIndex + 1) < this.height ? yIndex + 1 : 0;
+                const nextX = (xIndex + 1) < this.width ? xIndex + 1 : 0;
+
+                const count =
+                  this.cells[prevY][prevX].alive +
+                  this.cells[yIndex][prevX].alive +
+                  this.cells[nextY][prevX].alive +
+                  this.cells[prevY][xIndex].alive +
+                  this.cells[nextY][xIndex].alive +
+                  this.cells[prevY][nextX].alive +
+                  this.cells[yIndex][nextX].alive +
+                  this.cells[nextY][nextX].alive;
+
+                if ([2, 3].includes(count)) {
+                  if (!cell.alive && count === 3) {
+                    nextCells[yIndex][xIndex] = true;
+                  }
+                } else {
+                  nextCells[yIndex][xIndex] = false;
+                }
+              });
+            });
+            this.cells.forEach((yCells, yIndex) => yCells.forEach((cell, xIndex) => (cell.alive = nextCells[yIndex][xIndex])));
+            setTimeout(this.run.bind(this), 100);
+          }
+        }
+      );
+      }();
+  </script>
