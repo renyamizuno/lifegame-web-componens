@@ -1,0 +1,42 @@
+
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>life game</title>
+    <link rel="import" href="./components/lifegame.html">
+  </head>
+  <body>
+    <lifegame-main width="50" height="50"></lifegame-main>
+    <div>
+      <label>
+        width
+        <input type="number" value="50" name="width">
+      </label>
+    </div>
+    <div>
+        <label>
+          height
+          <input type="number" value="50" name="height">
+        </label>
+    </div>
+    <div>
+      <button class="start-button">start</button>
+    </div>
+    <script>
+      !function(){
+        const lifegame = document.querySelector('lifegame-main');
+        document.querySelector('[name="width"]').addEventListener('change', e => {
+          lifegame.width = e.target.value;
+        });
+        document.querySelector('[name="height"]').addEventListener('change', e => {
+          lifegame.height = e.target.value;
+        });
+        document.querySelector('.start-button').addEventListener('click', _ => {
+          lifegame.runStatus = !lifegame.runStatus;
+          document.querySelector('.start-button').innerText = lifegame.runStatus ? 'stop' : 'start';
+        });
+      }();
+    </script>
+  </body>
+</html>
