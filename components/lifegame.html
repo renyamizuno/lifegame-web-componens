@@ -94,35 +94,41 @@
 
           run() {
             if(!this.runStatus) { return; }
-            const nextCells = this.cells.map((yCells) => (yCells.map((cell) => (cell.alive))));
-            this.cells.forEach((yCells, yIndex) => {
-              yCells.forEach((cell, xIndex) => {
-                const prevY = (yIndex - 1) < 0 ? this.height - 1 : yIndex - 1;
-                const prevX = (xIndex - 1) < 0 ? this.width - 1 : xIndex - 1;
-                const nextY = (yIndex + 1) < this.height ? yIndex + 1 : 0;
-                const nextX = (xIndex + 1) < this.width ? xIndex + 1 : 0;
-
-                const count =
-                  this.cells[prevY][prevX].alive +
-                  this.cells[yIndex][prevX].alive +
-                  this.cells[nextY][prevX].alive +
-                  this.cells[prevY][xIndex].alive +
-                  this.cells[nextY][xIndex].alive +
-                  this.cells[prevY][nextX].alive +
-                  this.cells[yIndex][nextX].alive +
-                  this.cells[nextY][nextX].alive;
-
-                if ([2, 3].includes(count)) {
-                  if (!cell.alive && count === 3) {
-                    nextCells[yIndex][xIndex] = true;
-                  }
-                } else {
-                  nextCells[yIndex][xIndex] = false;
-                }
+            const oldCells = this.cells.map((yCells) => (yCells.map((cell) => (cell.alive))));
+            oldCells.forEach((yCells, yIndex) => {
+              yCells.forEach((alive, xIndex) => {
+                this.cells[yIndex][xIndex].alive = this.judging(alive, this.count(oldCells, yIndex, xIndex));
               });
             });
-            this.cells.forEach((yCells, yIndex) => yCells.forEach((cell, xIndex) => (cell.alive = nextCells[yIndex][xIndex])));
             setTimeout(this.run.bind(this), 100);
+          }
+
+          count(cells, yIndex, xIndex) {
+            const prevY = (yIndex - 1) < 0 ? this.height - 1 : yIndex - 1;
+            const prevX = (xIndex - 1) < 0 ? this.width - 1 : xIndex - 1;
+            const nextY = (yIndex + 1) < this.height ? yIndex + 1 : 0;
+            const nextX = (xIndex + 1) < this.width ? xIndex + 1 : 0;
+
+            return cells[prevY][prevX] +
+              cells[yIndex][prevX] +
+              cells[nextY][prevX] +
+              cells[prevY][xIndex] +
+              cells[nextY][xIndex] +
+              cells[prevY][nextX] +
+              cells[yIndex][nextX] +
+              cells[nextY][nextX];
+          }
+
+
+          judging(alive, count) {
+            if ([2, 3].includes(count)) {
+              if (!alive && count === 3) {
+                return true;
+              }
+              return alive;
+            } else {
+              return false;
+            }
           }
         }
       );
